@@ -2,6 +2,7 @@ const express = require("express")
 const app = express();
 
 require("./query_params")(app);
+require("./multiple_route_handelers")(app);
 
 
 app.use("/test", (req, res) => {
