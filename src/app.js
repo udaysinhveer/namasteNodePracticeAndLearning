@@ -4,10 +4,14 @@ const app = express();
 require("./query_params")(app);
 require("./multiple_route_handelers")(app);
 
-const { adminAuth, userAuth } = require("./middlewares/auth")
+const { adminAuth, userAuth } = require("./middlewares/auth");
+const { createUser, getUser } = require("./error_handling");
 
-app.use("/user", userAuth);
-app.use("/admin", adminAuth)
+app.use("/user", userAuth); // auth middleware for user
+app.use("/admin", adminAuth) // auth middleware for admin
+
+app.post("/userError", createUser); // Error Handling for Post user
+app.get("/userError", getUser);     // Error Handling for get user
 
 
 app.use("/test", (req, res) => {
