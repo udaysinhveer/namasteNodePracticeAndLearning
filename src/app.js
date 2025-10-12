@@ -3,10 +3,11 @@ const app = express();
 
 require("./query_params")(app);
 require("./multiple_route_handelers")(app);
+const connectDB = require("./config/database");
 
 const { adminAuth, userAuth } = require("./middlewares/auth");
 const { createUser, getUser } = require("./error_handling");
-
+const User = require("./models/user")
 app.use("/user", userAuth); // auth middleware for user
 app.use("/admin", adminAuth) // auth middleware for admin
 
@@ -91,6 +92,35 @@ app.put("/user", (req, res) => {
 //     res.send("Namaste Uday")
 // })
 
-app.listen(3000, () => {
-    console.log("server is listining successfully on port 3000");
+
+app.post('/signup', async (req, res) => {
+
+    const userObj = {
+        firstName: "sanika",
+        lastName: "shinde",
+        emailId: "udaysinhveer3@gmail.com",
+        password: "uday@123",
+        age: 21,
+        gender: "Female"
+    }
+
+
+    //creating a new instance of the user model 
+    const user = new User(userObj)
+    try {
+        await user.save();
+        res.send("User added successfully")
+    }
+    catch (err) {
+        res.status(400).send("Error in crearting the user")
+    }
 })
+
+const startServer = async () => {
+    await connectDB(); // Wait for DB connection
+    app.listen(3000, () => {
+        console.log(`🚀 Server is listening on port ${3000}`);
+    });
+};
+
+startServer();
