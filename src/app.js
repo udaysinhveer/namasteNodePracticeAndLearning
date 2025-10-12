@@ -4,9 +4,18 @@ const app = express();
 require("./query_params")(app);
 require("./multiple_route_handelers")(app);
 
+const { adminAuth, userAuth } = require("./middlewares/auth")
+
+app.use("/user", userAuth);
+app.use("/admin", adminAuth)
+
 
 app.use("/test", (req, res) => {
     res.send("Test from the server")
+})
+
+app.use("/admin", (req, res) => {
+    res.send("list of all admins")
 })
 
 app.get("/user", (req, res) => {
