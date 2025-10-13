@@ -4,6 +4,7 @@ const app = express();
 require("./query_params")(app);
 require("./multiple_route_handelers")(app);
 const connectDB = require("./config/database");
+app.use(express.json());
 
 const { adminAuth, userAuth } = require("./middlewares/auth");
 const { createUser, getUser } = require("./error_handling");
@@ -94,19 +95,8 @@ app.put("/user", (req, res) => {
 
 
 app.post('/signup', async (req, res) => {
-
-    const userObj = {
-        firstName: "sanika",
-        lastName: "shinde",
-        emailId: "udaysinhveer3@gmail.com",
-        password: "uday@123",
-        age: 21,
-        gender: "Female"
-    }
-
-
     //creating a new instance of the user model 
-    const user = new User(userObj)
+    const user = new User(req.body)
     try {
         await user.save();
         res.send("User added successfully")
@@ -115,6 +105,36 @@ app.post('/signup', async (req, res) => {
         res.status(400).send("Error in crearting the user")
     }
 })
+
+
+// get user from the database
+
+app.get("/userWithEmailId", async (req, res) => {
+
+    const userEmail = req.body.emailId
+
+    try {
+        const user = await User.find({ emailId: userEmail })
+        if (user.length >= 0) {
+            res.status(404).send("User not found")
+        } else {
+            res.send(user)
+        }
+    } catch (err) {
+        res.status(400).send('User not found')
+    }
+})
+
+app.get("/allUsers", async (req, res) => {
+    try {
+        const users = await User.find({});
+        res.status(200).send(users);
+    } catch (error) {
+        console.error("Error fetching users:", error);
+        res.status(500).send({ message: "Error fetching users" });
+    }
+});
+
 
 const startServer = async () => {
     await connectDB(); // Wait for DB connection
