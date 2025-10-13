@@ -135,6 +135,30 @@ app.get("/allUsers", async (req, res) => {
     }
 });
 
+app.delete("/deleteUser", async (req, res) => {
+    const userId = req.body.userId
+
+    try {
+        await User.findByIdAndDelete(userId);
+        res.status(200).send("User Deleted Successfully");
+    } catch (err) {
+        res.status(400).send({ message: "unable to delete user" })
+    }
+})
+
+
+// update user using the patch 
+
+app.patch("/updateUser", async (req, res) => {
+    const userId = req.body.userId
+
+    try {
+        await User.findByIdAndUpdate(userId, req.body);
+        res.status(200).send("User Updated Successfully");
+    } catch (err) {
+        res.status(400).send({ message: "Error" })
+    }
+})
 
 const startServer = async () => {
     await connectDB(); // Wait for DB connection
