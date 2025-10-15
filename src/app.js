@@ -188,6 +188,31 @@ app.patch("/updateUser/:userId", async (req, res) => {
     }
 })
 
+app.post("/login", async (req, res) => {
+    try {
+        const { emailId, password } = req.body;
+        const user = await User.findOne({ emailId: emailId });
+        if (!user) {
+            throw new Error("invalid credentials")
+
+            // never use and err message like email id is not found, it expose the our database. Instead, use generic error messages 
+        }
+
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+        console.log(isPasswordValid);
+        
+
+        if (isPasswordValid) {
+            res.send("login successfully")
+        } else {
+            throw new Error("Password is Incorrect")
+        }
+
+    } catch (err) {
+        res.status(400).send({ message: err.message })
+    }
+})
+
 const startServer = async () => {
     await connectDB(); // Wait for DB connection
     app.listen(3000, () => {
