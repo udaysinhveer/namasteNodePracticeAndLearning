@@ -1,5 +1,6 @@
 const express = require("express")
 const app = express();
+const bcrypt = require("bcrypt")
 
 require("./query_params")(app);
 require("./multiple_route_handelers")(app);
@@ -14,6 +15,7 @@ app.use("/admin", adminAuth) // auth middleware for admin
 
 app.post("/userError", createUser); // Error Handling for Post user
 app.get("/userError", getUser);     // Error Handling for get user
+const { validateSignUpData } = require("./utils/validation")
 
 
 app.use("/test", (req, res) => {
@@ -95,16 +97,25 @@ app.put("/user", (req, res) => {
 
 
 app.post('/signup', async (req, res) => {
-    //creating a new instance of the user model 
-    const user = new User(req.body)
+
+    const { password, firstName, lastName, emailId } = req.body
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    const user = new User({
+        firstName,
+        lastName,
+        emailId,
+        password: passwordHash
+    });
+
     try {
+        validateSignUpData(req);
         await user.save();
-        res.send("User added successfully")
+        res.send("User added successfully");
+    } catch (err) {
+        res.status(400).send({ error: err.message });
     }
-    catch (err) {
-        res.status(400).send(err.message)
-    }
-})
+});
 
 
 // get user from the database
