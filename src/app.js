@@ -2,7 +2,8 @@ const express = require("express")
 const app = express();
 const bcrypt = require("bcrypt");
 const cookieParser = require("cookie-parser");
-const jwt = require("jsonwebtoken")
+const jwt = require("jsonwebtoken");
+const { userAuth1 } = require("./middlewares/auth")
 
 
 require("./query_params")(app);
@@ -206,7 +207,7 @@ app.post("/login", async (req, res) => {
 
         if (isPasswordValid) {
 
-            const token = await jwt.sign({ _id: user._id }, "Dev@Uday#2710") // generating JWT token
+            const token = await jwt.sign({ _id: user._id }, "Dev@Uday#2710", { expiresIn:"1d",}) // generating JWT token
             // 1. _id:user._id  ======> This is the payload, meaning the actual data you want to embed inside the JWT (JSON Web Token).
             //2. "Dev@Uday#2710" ======> It’s the secret key that signs the token to prevent tampering and ensures verification fails if the token is altered.
 
@@ -224,24 +225,28 @@ app.post("/login", async (req, res) => {
 })
 
 
-app.get("/profile", async (req, res) => {
-    const cookie = req.cookies;
-    const { token } = cookie;
-    if (!token) {
-        throw new Error("Invalid token")
-    }
+app.get("/profile",userAuth1, async (req, res) => {
+    // const cookie = req.cookies;
+    // const { token } = cookie;
+    // if (!token) {
+    //     throw new Error("Invalid token")
+    // }
 
-    // validate token 
+    // // validate token 
+    // const decodedMessage = await jwt.verify(token, "Dev@Uday#2710");
+    // const { _id } = decodedMessage
+    // const user = await User.findById(_id);
 
-    const decodedMessage = await jwt.verify(token, "Dev@Uday#2710");
-    const { _id } = decodedMessage
-    const user = await User.findById(_id);
+
+
+    //using the middleware
+
+    const user = req.user
+
     if (!user) {
         throw new Error("user does not exist")
     }
     res.send(user);
-
-
 })
 
 
