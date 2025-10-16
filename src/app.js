@@ -207,9 +207,11 @@ app.post("/login", async (req, res) => {
 
         if (isPasswordValid) {
 
-            const token = await jwt.sign({ _id: user._id }, "Dev@Uday#2710", { expiresIn:"1d",}) // generating JWT token
+            // const token = await jwt.sign({ _id: user._id }, "Dev@Uday#2710", { expiresIn:"1d",}) // generating JWT token
             // 1. _id:user._id  ======> This is the payload, meaning the actual data you want to embed inside the JWT (JSON Web Token).
             //2. "Dev@Uday#2710" ======> It’s the secret key that signs the token to prevent tampering and ensures verification fails if the token is altered.
+
+            const token = await user.getJWT()
 
             res.cookie("token", token);
             res.send("login successfully");
