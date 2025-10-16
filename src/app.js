@@ -1,11 +1,15 @@
 const express = require("express")
 const app = express();
-const bcrypt = require("bcrypt")
+const bcrypt = require("bcrypt");
+const cookieParser = require("cookie-parser");
+const jwt = require("jsonwebtoken")
+
 
 require("./query_params")(app);
 require("./multiple_route_handelers")(app);
 const connectDB = require("./config/database");
 app.use(express.json());
+app.use(cookieParser()); // cookie-parser is a middleware that helps Express read cookies from the incoming HTTP requests.
 
 const { adminAuth, userAuth } = require("./middlewares/auth");
 const { createUser, getUser } = require("./error_handling");
@@ -199,11 +203,17 @@ app.post("/login", async (req, res) => {
         }
 
         const isPasswordValid = await bcrypt.compare(password, user.password);
-        console.log(isPasswordValid);
-        
 
         if (isPasswordValid) {
-            res.send("login successfully")
+
+            const token = await jwt.sign({ _id: user._id }, "Dev@Uday#2710") // generating JWT token
+            // 1. _id:user._id  ======> This is the payload, meaning the actual data you want to embed inside the JWT (JSON Web Token).
+            //2. "Dev@Uday#2710" ======> It’s the secret key that signs the token to prevent tampering and ensures verification fails if the token is altered.
+
+            res.cookie("token", token);
+            res.send("login successfully");
+            console.log('token', token);
+
         } else {
             throw new Error("Password is Incorrect")
         }
@@ -212,6 +222,28 @@ app.post("/login", async (req, res) => {
         res.status(400).send({ message: err.message })
     }
 })
+
+
+app.get("/profile", async (req, res) => {
+    const cookie = req.cookies;
+    const { token } = cookie;
+    if (!token) {
+        throw new Error("Invalid token")
+    }
+
+    // validate token 
+
+    const decodedMessage = await jwt.verify(token, "Dev@Uday#2710");
+    const { _id } = decodedMessage
+    const user = await User.findById(_id);
+    if (!user) {
+        throw new Error("user does not exist")
+    }
+    res.send(user);
+
+
+})
+
 
 const startServer = async () => {
     await connectDB(); // Wait for DB connection
